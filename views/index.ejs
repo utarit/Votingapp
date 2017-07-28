@@ -1,0 +1,8 @@
+<h1>HOME PAGEEE</h1>
+
+<a href="/polls/new">Create New Poll</a>
+<% polls.forEach( (poll) => { %>
+
+<a href="/polls/<%=poll._id%>"><p><%=poll.title%></p></a>
+
+<% }); %>

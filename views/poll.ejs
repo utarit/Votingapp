@@ -1,0 +1,17 @@
+<h1>HELLO THIS IS POLL PAGE</h1>
+
+
+
+
+<h4><%=polls.title%></h4>
+
+<select>
+ <% polls.options.forEach((option) => { %>
+  <option><%=option.name %></option>
+ <% }); %>
+</select>
+
+<button>Submit!!</button>
+
+<a href="/polls">Go Back</a>
+
