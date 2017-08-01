@@ -3,6 +3,16 @@ var app             = express();
 var mongoose        = require("mongoose");
 var bodyParser      = require("body-parser");
 var methodOverride  = require("method-override");
+var flash           = require("connect-flash");
+
+var passport = require("passport");
+var LocalStrategy = require("passport-local");
+
+
+//MODEL IMPORTS
+var Poll = require("./models/poll.js");
+var User = require("./models/user.js");
+
 
 mongoose.connect('mongodb://localhost/voteapp');
 
@@ -11,14 +21,29 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname + "/public"));
 app.use(methodOverride("_method"));
+app.use(flash());
 
-//
+
+
+//PASSPORT
+app.use(require("express-session")({
+    secret: "Once Karabas wins!",
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+//FUNCTION
 function x(err){
     console.log(err);
 }
 
-//MODEL IMPORTS
-var Poll = require("./models/poll.js");
+
 
 
 //=====================================
@@ -97,6 +122,38 @@ app.post("/polls/:id", (req,res) => {
     });
 });
 
+
+//============================
+//USER ROUTES
+//============================
+
+app.get("/register", (req, res) => {
+   res.render("register"); 
+});
+
+app.post("/register", (req, res) => {
+    User.register(new User({username: req.body.username}), req.body.password, (err, user) => {
+        if(err) {
+            x(err);
+        } else {
+            passport.authenticate("local")(req, res, () => {
+                res.redirect("/polls");
+            });
+        }
+    });
+});
+
+app.get("/login", (req, res) => {
+   res.render("login"); 
+});
+
+app.post("/login", passport.authenticate("local", {
+    successRedirect: "/polls",
+    failureRedirect: "/login"
+}),
+(req, res) => {
+    
+});
 
 
 
