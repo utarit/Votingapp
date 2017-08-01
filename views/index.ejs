@@ -1,8 +1,26 @@
-<h1>HOME PAGEEE</h1>
+<% include ./partials/header %>
 
-<a href="/polls/new">Create New Poll</a>
-<% polls.forEach( (poll) => { %>
+<div class="container">
+<div class="jumbotron">
+    <h1>Welcome to AKÇA VOTE APP!!</h1>
 
-<a href="/polls/<%=poll._id%>"><p><%=poll.title%></p></a>
+<a class="btn btn-success" href="/polls/new">Create New Poll</a>
+</div>
 
-<% }); %>
+<div class="row">
+    <div class="col-md-4">
+        <ul class="list-group">
+            <% polls.forEach( (poll) => { %>
+                <a href="/polls/<%=poll._id%>"><li class="list-group-item"><%=poll.title%></li></a>
+            <% }); %>  
+    
+        </ul>
+    </div>
+</div>
+
+
+
+</div>
+
+
+<% include ./partials/footer %>

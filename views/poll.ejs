@@ -1,17 +1,88 @@
-<h1>HELLO THIS IS POLL PAGE</h1>
+<% include ./partials/header %>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="jumbotron">
+                <h4 id="vote-title"><%=polls.title%></h4>
+            <form action="/polls/<%=polls._id%>" method="POST">
+                <div class="form-group">
+                    <select class="form-control" name="selection">
+                 <% polls.options.forEach((option) => { %>
+                  <option><%=option.name %></option>
+                 <% }); %>
+                    </select>
+                    </div>
+                    <div class="form-group">
+                        <button class="form-control btn btn-primary">Submit!!</button>
+                    </div>
+            </form>
+            </div>
+        </div>
+
+
+        <div class="col-md-8">
+            <div id="chart_div" style="width:400; height:300"></div>
+            
+                <ul style="display: none" class="data-table">
+               <% for(var i = 0; i<polls.options.length; i++) { %>
+                    <li class="options"><span class="opt-name"><%=polls.options[i].name%></span> - <span class="opt-voting"><%=polls.options[i].voting%></span></li>
+              <%  } %>
+              <li>Number of Options: <span id="no-of-opt"><%=i%></span></li>
+            </ul>
+        
+        </div>
+
+    </div>
+</div>
 
 
 
-
-<h4><%=polls.title%></h4>
-
-<select>
- <% polls.options.forEach((option) => { %>
-  <option><%=option.name %></option>
- <% }); %>
-</select>
-
-<button>Submit!!</button>
 
 <a href="/polls">Go Back</a>
+
+
+<!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      // Load the Visualization API and the piechart package.
+      google.charts.load('current', {'packages':['corechart']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table, 
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      var title = $("#vote-title").text();
+      var voteData = [];
+      var numberOfOptions = Number($("#no-of-opt").text());
+      for(var i = 1; i<numberOfOptions+1; i++) {
+          var name = $(".data-table li:nth-child("+i+") span:nth-child(1)").text();
+          var voting = Number($(".data-table li:nth-child("+i+") span:nth-child(2)").text());
+          voteData.push([name, voting]);
+      }
+      
+      function drawChart() {
+
+      // Create the data table.
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', 'Options');
+      data.addColumn('number', 'Votes');
+      data.addRows(voteData);
+
+      // Set chart options
+      var options = {'title': title,
+                     'width':700,
+                     'height':500};
+
+      // Instantiate and draw our chart, passing in some options.
+      var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+      chart.draw(data, options);
+    }
+    </script>
+
+
+<% include ./partials/footer %>
 

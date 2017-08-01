@@ -4,7 +4,6 @@ var mongoose        = require("mongoose");
 var bodyParser      = require("body-parser");
 var methodOverride  = require("method-override");
 
-
 mongoose.connect('mongodb://localhost/voteapp');
 
 
@@ -72,6 +71,28 @@ app.get("/polls/:id", (req, res) => {
            x(err);
        } else {
            res.render("poll", {polls: polls});
+       }
+    });
+});
+
+app.post("/polls/:id", (req,res) => {
+    Poll.findById(req.params.id, (err, polls) => {
+       if(err){
+           x(err);
+       } else {
+           polls.options.forEach((option) => {
+              if(option.name == req.body.selection){
+                  option.voting++;
+                  polls.save((err, newPoll) =>{
+                      if(err){
+                          x(err);
+                      } else {
+                          res.redirect("/polls/"+polls._id);
+                      }
+                  });
+              }
+           });
+           
        }
     });
 });
