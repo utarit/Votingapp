@@ -12,7 +12,7 @@ var LocalStrategy = require("passport-local");
 //MODEL IMPORTS
 var Poll = require("./models/poll.js");
 var User = require("./models/user.js");
-
+var middleware = require("./middleware/index.js");
 
 mongoose.connect('mongodb://localhost/voteapp');
 
@@ -43,6 +43,13 @@ function x(err){
     console.log(err);
 }
 
+app.use(function(req, res, next){
+    res.locals.currentUser = req.user;
+    res.locals.error = req.flash("error");
+    res.locals.success = req.flash("success");
+    next();
+});
+
 
 
 
@@ -55,15 +62,18 @@ app.get("/", (req, res) =>{
 });
 
 app.get("/polls", (req, res) =>{
+    console.log("User:",req.user);
     Poll.find({}, (err, polls) =>{
         if(err){
             x(err);
         } else {
-            res.render("index", {polls: polls});
+            res.render("index", {polls: polls, page: "home"});
         }
     });
     
 });
+
+
 
 app.post("/polls", (req, res) =>{
     req.body.polls.options = req.body.polls.options.split("\r\n");
@@ -81,13 +91,25 @@ app.post("/polls", (req, res) =>{
        if(err){
            x(err);
        } else {
+           polls.author.id = req.user._id;
+           polls.author.username = req.user.username;
+           polls.save();
+           User.findById(req.user._id, (err, users) => {
+               if(err){
+                   x(err);
+               } else {
+                   users.polls.push(polls._id);
+                   users.save();
+               }
+           });
            res.redirect("/");
        }
     });
+    
 });
 
-app.get("/polls/new", (req, res) =>{
-   res.render("new"); 
+app.get("/polls/new",middleware.isLoggedIn, (req, res) =>{
+   res.render("new", {page: "new"}); 
 });
 
 app.get("/polls/:id", (req, res) => {
@@ -95,6 +117,7 @@ app.get("/polls/:id", (req, res) => {
        if(err) {
            x(err);
        } else {
+           console.log("Poll:", polls )
            res.render("poll", {polls: polls});
        }
     });
@@ -128,7 +151,7 @@ app.post("/polls/:id", (req,res) => {
 //============================
 
 app.get("/register", (req, res) => {
-   res.render("register"); 
+   res.render("register", {page: "register"}); 
 });
 
 app.post("/register", (req, res) => {
@@ -144,7 +167,7 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-   res.render("login"); 
+   res.render("login", {page: "login"}); 
 });
 
 app.post("/login", passport.authenticate("local", {
@@ -153,6 +176,11 @@ app.post("/login", passport.authenticate("local", {
 }),
 (req, res) => {
     
+});
+
+app.get("/logout", (req ,res) => {
+   req.logout();
+   res.redirect("/polls");
 });
 
 
